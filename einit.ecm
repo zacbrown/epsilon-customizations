@@ -1,0 +1,10 @@
+# Epsilon customization file. -*- Mode: Conf -*-
+# This file lists your Epsilon customizations, such as
+# setting variables, colors, bindings and so forth.
+# Epsilon reads it at startup.
+
++record-customizations char variable: 2
++record-customizations char variable: 2
++tab-size buffer short variable: 4
++indent-with-tabs buffer char variable: 0
++-our-gui-scheme short variable: bisque-background
