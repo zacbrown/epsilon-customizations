@@ -3,8 +3,9 @@
 # setting variables, colors, bindings and so forth.
 # Epsilon reads it at startup.
 
-+record-customizations char variable: 2
-+record-customizations char variable: 2
-+tab-size buffer short variable: 4
-+indent-with-tabs buffer char variable: 0
-+-our-gui-scheme short variable: bisque-background
+(set-variable record-customizations 2)
+(set-variable want-bell 0)
+(set-variable show-spaces 9)
+(set-variable tab-size 4)
+(set-variable indent-with-tabs 0)
+(load-eel-from-path "einit.e" 2)
