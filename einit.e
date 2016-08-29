@@ -21,11 +21,11 @@ when_loading()    /* Execute this file when loaded. */
     {
         /* Show tabs and spaces, no newlines. */
         show_spaces = 9;
+        when_setting_show_spaces();
     }
 
-    when_setting_show_spaces();
-    want_code_coloring();
-    new_c_comments();
+    when_setting_want_code_coloring();
+    when_setting_new_c_comments();
 
     //do_save_state("epsilon");   /* Save these changes. */
 }
