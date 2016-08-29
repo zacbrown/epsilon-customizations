@@ -5,7 +5,7 @@
 
 (set-variable record-customizations 2)
 (set-variable want-bell 0)
-(set-variable show-spaces 9)
 (set-variable tab-size 4)
 (set-variable indent-with-tabs 0)
+
 (load-eel-from-path "einit.e" 2)

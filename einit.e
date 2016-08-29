@@ -17,5 +17,15 @@ when_loading()    /* Execute this file when loaded. */
         _our_color_scheme = scheme;
     }
 
+    if (!is_gui)
+    {
+        /* Show tabs and spaces, no newlines. */
+        show_spaces = 9;
+    }
+
+    when_setting_show_spaces();
+    want_code_coloring();
+    new_c_comments();
+
     //do_save_state("epsilon");   /* Save these changes. */
 }
