@@ -17,10 +17,11 @@ when_loading()    /* Execute this file when loaded. */
         _our_color_scheme = scheme;
     }
 
-    if (!is_gui)
+    if (is_gui)
     {
         /* Show tabs and spaces, no newlines. */
         show_spaces = 9;
+        show_spaces.default = 9;
         when_setting_show_spaces();
     }
 
