@@ -12,3 +12,6 @@
 (set-variable fill-mode 1)
 
 (load-eel-from-path "einit.e" 2)
+
+# Add a color for c-keyword.
+&bisque-background color class for c-keyword: [0xE54C9 on 0xB7D5EE]
