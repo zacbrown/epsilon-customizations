@@ -178,11 +178,13 @@ command powershell_mode()
     mode_keys = powershell_tab;
     major_mode = powershell_mode_name;
     compile_buffer_cmd = compile_powershell_cmd;
-    //auto_indent = 1;
+
+    auto_indent = 1;
     if (powershell_tab_override > 0) tab_size = powershell_tab_override;
     indent_with_tabs = powershell_indent_with_tabs;
     //indenter = do_powershell_indent;
     soft_tab_size = powershell_indent;
+
     strcpy(comment_start, "#[ \t]*");
     strcpy(comment_pattern, "# *$");
     strcpy(comment_begin, "# ");

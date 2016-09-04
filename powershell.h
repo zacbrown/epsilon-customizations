@@ -13,12 +13,13 @@ user char powershell_auto_show_delim_chars[20] = "{([])}";
 user char powershell_indent_to_comment = 1;
 //user char powershell_language_level = 3; // Not clear yet that we'd need this.
 
-color_class powershell_comment;
-color_class powershell_string;
-color_class powershell_keyword;
-color_class powershell_identifier;
-color_class powershell_function;
-color_class powershell_number;
+color_class powershell_comment = color_class perl_comment;
+color_class powershell_string = color_class perl_string;
+color_class powershell_keyword = color_class perl_keyword;
+color_class powershell_identifier = color_class perl_variable;
+color_class powershell_function = color_class perl_function;
+color_class powershell_number = color_class perl_constant;
+
 int color_powershell_range();
 
 
