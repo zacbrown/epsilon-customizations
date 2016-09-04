@@ -3,6 +3,7 @@
 #include "eel.h"
 #include "proc.h"
 #include "colcode.h"
+#include "perl.h"
 #include "powershell.h"
 
 
@@ -56,11 +57,17 @@ powershell_keyword_color(from)
     buf[0] = '|';
     grab(from, point, buf + 1);
 
-    // Check if this is a number.
-    // TODO: This probably doesn't handle numbers like -.4
-    if (index("0123456789-", buf[1]) || buf[1] == '.' && isdigit(buf[2]))
+    // positive numbers
+    if (index("0123456789%.", buf[1]))
     {
-        buffer_printf("#messages#", "number: %s\n", buf);
+        buffer_printf("#messages#", "number (positive): %s\n", buf);
+        return c_number_color(buf + 1);
+    }
+
+    // negative numbers
+    if (buf[1] == '-' && index("0123456789%.", buf[2]))
+    {
+        buffer_printf("#messages#", "number (negative): %s\n", buf);
         return c_number_color(buf + 1);
     }
 
@@ -93,7 +100,7 @@ powershell_keyword_color(from)
 }
 
 
-// Found a " or """ or ', make it purdy.
+// Found a " or """ or ' or @", make it purdy.
 powershell_string_color(int c)
 {
     
@@ -120,10 +127,10 @@ color_powershell_range(from, to) // recolor just this section
         if (!re_search(1,
                        "%$[A-Za-z_][A-Za-z0-9_]*"           // variables
                        "|[A-Za-z_](-|[A-Za-z0-9_])*"        // function names
+                       "|-[A-Za-z_][A-Za-z]*"               // operators
                        "|-?%.?[0-9]([A-Za-z0-9._]|[Ee]-)*"  // numbers
                        "|[\"'#]"))                          // comments
         {
-            buffer_printf("#messages#", "derp! ");
             t = size();
             break;
         }
