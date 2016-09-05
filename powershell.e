@@ -3,9 +3,9 @@
 #include "eel.h"
 #include "proc.h"
 #include "colcode.h"
+#include "c.h"
 #include "perl.h"
 #include "powershell.h"
-
 
 is_powershell_keyword(char *p)
 {
@@ -60,21 +60,18 @@ powershell_keyword_color(from)
     // positive numbers
     if (index("0123456789%.", buf[1]))
     {
-        buffer_printf("#messages#", "number (positive): %s\n", buf);
         return c_number_color(buf + 1);
     }
 
     // negative numbers
     if (buf[1] == '-' && index("0123456789%.", buf[2]))
     {
-        buffer_printf("#messages#", "number (negative): %s\n", buf);
         return c_number_color(buf + 1);
     }
 
     // Check if this is a variable.
     if (buf[1] == '$' && isalnum(buf[2]))
     {
-        buffer_printf("#messages#", "identifier: %s\n", buf);
         return color_class powershell_identifier;
     }
 
@@ -83,27 +80,67 @@ powershell_keyword_color(from)
     // Check if this is an operator.
     if (is_powershell_operator(buf))
     {
-        buffer_printf("#messages#", "operator: %s\n", buf);
         return color_class powershell_keyword;
     }
 
     // Check if this is a keyword.
     if (is_powershell_keyword(buf))
     {
-        buffer_printf("#messages#", "keyword: %s\n", buf);
         return color_class powershell_keyword;
     }
 
     // Must not be a number, operator, or keyword so assume identifier.
-    buffer_printf("#messages#", "identifier: %s\n", buf);
     return color_class powershell_identifier;
 }
 
+powershell_here_string_color(int c)
+{
+    char pat[20];
+    int start = point - 2;
 
-// Found a " or """ or ' or @", make it purdy.
+    if (character(point - 2) == c
+          && character(point - 2) == '@'
+          && character(point - 1) == '\"')
+    {
+        // here-string
+        // https://technet.microsoft.com/en-us/library/ee692792.aspx
+        sprintf(pat, "<DQuote>@|\n");
+    }
+
+    while (re_search(1, pat))
+    {
+        if (character(matchstart) != '\n') break;
+    }
+
+    set_character_color(start, point, color_class powershell_string);
+}
+
+// Found a " or """ or ', make it purdy.
 powershell_string_color(int c)
 {
-    
+    char pat[20];
+    int start = point -1;
+
+    if (character(point) == c
+          && character(point + 1) == c
+          && character(point + 2) == c)
+    {
+        // Quoted string - """My sweet string."""
+        point += 2;
+        sprintf(pat, "%c%c%c|\n", c, c, c);
+    }
+    else
+    {
+        // Normal string
+        sprintf(pat, "%c|\n", c);
+    }
+
+    while (re_search(1, pat))
+    {
+        if (character(matchstart) != '\n' || character(matchstart) != c) break;
+    }
+
+    set_character_color(start, point, color_class powershell_string);
 }
 
 color_powershell_range(from, to) // recolor just this section
@@ -129,7 +166,8 @@ color_powershell_range(from, to) // recolor just this section
                        "|[A-Za-z_](-|[A-Za-z0-9_])*"        // function names
                        "|-[A-Za-z_][A-Za-z]*"               // operators
                        "|-?%.?[0-9]([A-Za-z0-9._]|[Ee]-)*"  // numbers
-                       "|[\"'#]"))                          // comments
+                       "|@<DQuote>.*<DQuote>@"                               // here-strings
+                       "|[\"'#]"))                          // comments, strings
         {
             t = size();
             break;
@@ -139,28 +177,39 @@ color_powershell_range(from, to) // recolor just this section
         switch (character(point - 1)) // check last char
         {
             case '#': // found comment
-                buffer_printf("#messages#", "comment!\n");
                 nl_forward();
                 set_character_color(t, point, color_class powershell_comment);
                 break;
             /*
+            case '<': // example comment... <# #>
+                break;
+            */
             case '"': // found a string literal
-                //powershell_string_color('"');
-                if (get_character_color(point, (int *) 0, &s) == 
-                      color_class powershell_string && s > to)  // fix up after
-                    if (point < (to = s))   // quoted "'s
-                        set_character_color(point, to, -1);
+                if (character(point - 2) == '@')
+                {
+                    powershell_here_string_color('@');
+                    if (get_character_color(point, (int *) 0, &s) ==
+                          color_class powershell_string && s > to) // fix up after
+                        if (point < (to = s)) // quoted "'s
+                            set_character_color(point, to, -1);
+                }
+                else
+                {
+                    powershell_string_color('"');
+                    if (get_character_color(point, (int *) 0, &s) == 
+                          color_class powershell_string && s > to)  // fix up after
+                        if (point < (to = s))   // quoted "'s
+                            set_character_color(point, to, -1);
+                }
                 break;
             case '\'':
-                // powershell_string_color('\'');
+                powershell_string_color('\'');
                 if (get_character_color(point, (int *) 0, &s) == 
                       color_class powershell_string && s > to)  // fix up after
                     if (point < (to = s))	 // quoted "'s
                         set_character_color(point, to, -1);
                 break;
-            */
             default:    // found identifier, kywd, or number
-                buffer_printf("#messages#", "herp derp\n");
                 set_character_color(t, point, powershell_keyword_color(t));
                 break;
         }
@@ -186,10 +235,11 @@ command powershell_mode()
     major_mode = powershell_mode_name;
     compile_buffer_cmd = compile_powershell_cmd;
 
-    auto_indent = 1;
     if (powershell_tab_override > 0) tab_size = powershell_tab_override;
     indent_with_tabs = powershell_indent_with_tabs;
     //indenter = do_powershell_indent;
+    auto_indent = 1;
+    indenter = c_indenter;
     soft_tab_size = powershell_indent;
 
     strcpy(comment_start, "#[ \t]*");
@@ -202,6 +252,7 @@ command powershell_mode()
 
     if (auto_show_powershell_delimiters)
         auto_show_matching_characters = powershell_auto_show_delim_chars;
+    mode_move_level = c_move_level;
 
     buffer_maybe_break_line = generic_maybe_break_line;
     fill_mode = (misc_language_fill_mode & 16) != 0;
