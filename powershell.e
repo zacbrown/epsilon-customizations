@@ -228,6 +228,21 @@ color_powershell_range(from, to) // recolor just this section
     return point;
 }
 
+suffix_ps1()
+{
+    powershell_mode();
+}
+
+suffix_psd1()
+{
+    powershell_mode();
+}
+
+suffix_psm1()
+{
+    powershell_mode();
+}
+
 command powershell_mode()
 {
     mode_default_settings();
