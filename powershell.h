@@ -16,7 +16,8 @@ user char powershell_indent_to_comment = 1;
 color_class powershell_comment = color_class perl_comment;
 color_class powershell_string = color_class perl_string;
 color_class powershell_keyword = color_class perl_keyword;
-color_class powershell_identifier = color_class perl_variable;
+color_class powershell_identifier = color_class c_identifier;
+color_class powershell_variable = color_class perl_variable;
 color_class powershell_function = color_class perl_function;
 color_class powershell_number = color_class perl_constant;
 

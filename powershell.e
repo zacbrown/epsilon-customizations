@@ -45,6 +45,12 @@ is_powershell_operator(char *p)
     return 0;
 }
 
+is_powershell_variable(char *p)
+{
+    if (re_search(1, "$[a-zA-Z][a-zA-Z0-9:]") && matchstart == point) return 1;
+    return 0;
+}
+
 powershell_keyword_color(from)
 {
     char buf[100];
@@ -143,6 +149,12 @@ powershell_string_color(int c)
     set_character_color(start, point, color_class powershell_string);
 }
 
+powershell_color_variable(int start)
+{
+    re_search(1, "<wspace>");
+    set_character_color(start, point, color_class powershell_variable);
+}
+
 color_powershell_range(from, to) // recolor just this section
 {   // last colored region may go past to
     int t = -1, talk, s, talk_at = 0;
@@ -162,11 +174,11 @@ color_powershell_range(from, to) // recolor just this section
         // Does the buffer look like it has PowerShell identifiers,
         // functions, numbers, or comments?
         if (!re_search(1,
-                       "%$[A-Za-z_][A-Za-z0-9_]*"           // variables
+                       "<Dollar>[A-Za-z_][A-Za-z0-9_:]*"    // variables
                        "|[A-Za-z_](-|[A-Za-z0-9_])*"        // function names
                        "|-[A-Za-z_][A-Za-z]*"               // operators
                        "|-?%.?[0-9]([A-Za-z0-9._]|[Ee]-)*"  // numbers
-                       "|@<DQuote>.*<DQuote>@"                               // here-strings
+                       "|@<DQuote>.*<DQuote>@"              // here-strings
                        "|[\"'#]"))                          // comments, strings
         {
             t = size();
@@ -174,6 +186,8 @@ color_powershell_range(from, to) // recolor just this section
         }
 
         t = matchstart;
+
+        // Markup comments, strings, and anything else.
         switch (character(point - 1)) // check last char
         {
             case '#': // found comment
@@ -214,6 +228,12 @@ color_powershell_range(from, to) // recolor just this section
                 break;
         }
 
+        // Fix up variables.
+        if (character(t) == '$')
+        {
+            powershell_color_variable(t);
+        }
+
         if (talk && point > talk_at + 2000 && time_done(&talk_now))
         {
             note("Coloring PowerShell program: %d%% complete...",
@@ -251,11 +271,12 @@ command powershell_mode()
     compile_buffer_cmd = compile_powershell_cmd;
 
     if (powershell_tab_override > 0) tab_size = powershell_tab_override;
+
+    // TODO: Deal with PowerShell lines which don't end in ;.
     indent_with_tabs = powershell_indent_with_tabs;
-    //indenter = do_powershell_indent;
+    soft_tab_size = powershell_indent;
     auto_indent = 1;
     indenter = c_indenter;
-    soft_tab_size = powershell_indent;
 
     strcpy(comment_start, "#[ \t]*");
     strcpy(comment_pattern, "# *$");
