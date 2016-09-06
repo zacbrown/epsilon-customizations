@@ -151,8 +151,8 @@ powershell_string_color(int c)
 
 powershell_color_variable(int start)
 {
-    re_search(1, "<wspace>");
-    set_character_color(start, point, color_class powershell_variable);
+    re_search(1, "<wspace>|;");
+    set_character_color(start, point - 1, color_class powershell_variable);
 }
 
 color_powershell_range(from, to) // recolor just this section
