@@ -7,6 +7,9 @@ when_loading()    /* Execute this file when loaded. */
     {
         int scheme = find_index("bisque-background");
         _our_gui_scheme = scheme;
+
+        draw_focus_rectangle = 1;
+        sprintf(draw_column_markers, "90");
     }
     else
     {
