@@ -10,10 +10,10 @@ when_loading()    /* Execute this file when loaded. */
     }
     else
     {
-        int scheme = find_index("borlandc");
+        int scheme = find_index("other-grey");
         _our_gui_scheme = scheme;
 
-        scheme = find_index("night-light");
+        scheme = find_index("window-black");
         _our_color_scheme = scheme;
     }
 
