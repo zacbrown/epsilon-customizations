@@ -10,6 +10,7 @@
 (set-variable margin-right 82)
 (set-variable c-fill-column 82)
 (set-variable fill-mode 1)
+(set-variable new-file-mode "fundamental-mode")
 
 (load-eel-from-path "einit.e" 2)
 (load-eel-from-path "powershell.e" 2)
